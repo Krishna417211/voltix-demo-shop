@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Product · Voltix</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+  <div class="container" id="main"></div>
+  <footer class="site">Voltix · demo store for QA testing — not a real shop.</footer>
+
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!requireAuth()) return;
+      mountChrome("shop");
+      const id = Number(new URLSearchParams(location.search).get("id"));
+      const p = PRODUCTS.find(x => x.id === id);
+      const main = document.getElementById("main");
+
+      if (!p) {
+        main.innerHTML = `<div class="empty"><div class="big">🤷</div><p>Product not found.</p><a class="btn" href="products.html">Back to shop</a></div>`;
+        return;
+      }
+
+      main.innerHTML = `
+        <div class="breadcrumb"><a href="products.html">Shop</a> / <a href="products.html?cat=${p.cat}">${p.cat}</a> / ${p.name}</div>
+        <div class="detail">
+          <div class="hero" style="background:${THUMB_BG[p.cat]}">${p.art}</div>
+          <div>
+            <span class="tag">${p.cat}</span>
+            <h1>${p.name}</h1>
+            <div class="price">${money(p.price)}</div>
+            <p class="desc">${p.blurb}</p>
+            <ul>${p.specs.map(s => `<li>${s}</li>`).join("")}</ul>
+            <div class="qty">
+              <label for="qty" style="margin:0">Qty</label>
+              <input id="qty" type="number" min="1" value="1" />
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+              <button class="btn accent" id="add" data-testid="add-to-cart">Add to cart</button>
+              <button class="btn primary" id="buy" data-testid="buy-now">Buy now</button>
+              <a class="btn ghost" href="products.html">Continue shopping</a>
+            </div>
+            <div class="notice" id="added" style="display:none; margin-top:16px">Added to your cart. <a href="cart.html">View cart →</a></div>
+          </div>
+        </div>`;
+
+      const qty = () => Math.max(1, Number(document.getElementById("qty").value) || 1);
+      document.getElementById("add").addEventListener("click", () => {
+        Cart.add(p.id, qty()); mountChrome("shop");
+        document.getElementById("added").style.display = "block";
+      });
+      document.getElementById("buy").addEventListener("click", () => {
+        Cart.add(p.id, qty()); location.href = "checkout.html";
+      });
+    });
+  </script>
+</body>
+</html>

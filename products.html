@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop · Voltix</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h1 id="heading">All products</h1>
+        <p>Gadgets and accessories, ready to ship.</p>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input class="search" id="search" type="search" placeholder="Search products…" aria-label="Search products" />
+      <div id="pills"></div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <div id="noresults" class="empty" style="display:none">
+      <div class="big">🔍</div>
+      <p>No products match your search.</p>
+    </div>
+  </div>
+  <footer class="site">Voltix · demo store for QA testing — not a real shop.</footer>
+
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!requireAuth()) return;
+      mountChrome("shop");
+
+      const params = new URLSearchParams(location.search);
+      let activeCat = params.get("cat") || "All";
+      let query = "";
+
+      const cats = ["All", "Audio", "Wearables", "Home", "Accessories"];
+      const pills = document.getElementById("pills");
+      pills.innerHTML = cats.map(c => `<span class="pill ${c===activeCat?'active':''}" data-cat="${c}">${c}</span>`).join("");
+      pills.querySelectorAll(".pill").forEach(p =>
+        p.addEventListener("click", () => { activeCat = p.dataset.cat; render(); syncPills(); }));
+
+      const heading = document.getElementById("heading");
+      const grid = document.getElementById("grid");
+      const nores = document.getElementById("noresults");
+      const search = document.getElementById("search");
+      search.addEventListener("input", () => { query = search.value.toLowerCase().trim(); render(); });
+
+      function syncPills() {
+        pills.querySelectorAll(".pill").forEach(p => p.classList.toggle("active", p.dataset.cat === activeCat));
+      }
+
+      function render() {
+        heading.textContent = activeCat === "All" ? "All products" : activeCat;
+        const list = PRODUCTS.filter(p =>
+          (activeCat === "All" || p.cat === activeCat) &&
+          (!query || p.name.toLowerCase().includes(query) || p.cat.toLowerCase().includes(query)));
+        nores.style.display = list.length ? "none" : "block";
+        grid.innerHTML = list.map(p => `
+          <div class="card product-card">
+            <a href="product.html?id=${p.id}" class="thumb" style="background:${THUMB_BG[p.cat]}" aria-label="${p.name}">${p.art}</a>
+            <div class="product-body">
+              <span class="cat">${p.cat}</span>
+              <h3><a href="product.html?id=${p.id}">${p.name}</a></h3>
+              <div class="price">${money(p.price)}</div>
+              <div class="row">
+                <a class="btn sm ghost" href="product.html?id=${p.id}">Details</a>
+                <button class="btn sm accent add" data-id="${p.id}" data-testid="add-${p.id}">Add to cart</button>
+              </div>
+            </div>
+          </div>`).join("");
+        grid.querySelectorAll(".add").forEach(b =>
+          b.addEventListener("click", () => { Cart.add(Number(b.dataset.id)); mountChrome("shop"); b.textContent = "Added ✓"; setTimeout(() => b.textContent = "Add to cart", 900); }));
+      }
+      render();
+    });
+  </script>
+</body>
+</html>

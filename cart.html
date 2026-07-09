@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cart · Voltix</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+  <div class="container">
+    <div class="page-head"><div><h1>Your cart</h1></div></div>
+    <div id="main"></div>
+  </div>
+  <footer class="site">Voltix · demo store for QA testing — not a real shop.</footer>
+
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!requireAuth()) return;
+      mountChrome();
+      render();
+
+      function render() {
+        const items = Cart.items();
+        const main = document.getElementById("main");
+        if (!items.length) {
+          main.innerHTML = `<div class="empty"><div class="big">🛒</div><p>Your cart is empty.</p><a class="btn primary" href="products.html">Browse products</a></div>`;
+          return;
+        }
+        const shipping = Cart.subtotal() > 150 ? 0 : 9.0;
+        const tax = Cart.subtotal() * 0.08;
+        const total = Cart.subtotal() + shipping + tax;
+        main.innerHTML = `
+          <div class="two-col">
+            <div class="card" style="padding:6px 18px">
+              <table>
+                <thead><tr><th></th><th>Product</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr></thead>
+                <tbody>
+                  ${items.map(i => `
+                    <tr>
+                      <td class="line-thumb">${i.art}</td>
+                      <td>${i.name}</td>
+                      <td>${money(i.price)}</td>
+                      <td>
+                        <div class="qty" style="margin:0">
+                          <button class="btn sm dec" data-id="${i.id}">−</button>
+                          <span data-testid="qty-${i.id}">${i.qty}</span>
+                          <button class="btn sm inc" data-id="${i.id}">+</button>
+                        </div>
+                      </td>
+                      <td>${money(i.price * i.qty)}</td>
+                      <td><button class="btn sm ghost rm" data-id="${i.id}" data-testid="remove-${i.id}">Remove</button></td>
+                    </tr>`).join("")}
+                </tbody>
+              </table>
+            </div>
+            <div class="summary">
+              <div class="line"><span>Subtotal</span><span>${money(Cart.subtotal())}</span></div>
+              <div class="line"><span>Shipping</span><span>${shipping ? money(shipping) : "Free"}</span></div>
+              <div class="line"><span>Tax (8%)</span><span>${money(tax)}</span></div>
+              <div class="total"><span>Total</span><span data-testid="cart-total">${money(total)}</span></div>
+              <a class="btn primary block" href="checkout.html" style="margin-top:18px" data-testid="checkout-btn">Checkout</a>
+              <a class="btn ghost block" href="products.html" style="margin-top:10px">Continue shopping</a>
+            </div>
+          </div>`;
+        main.querySelectorAll(".inc").forEach(b => b.addEventListener("click", () => { const it = Cart.items().find(x=>x.id==b.dataset.id); Cart.setQty(Number(b.dataset.id), it.qty+1); mountChrome(); render(); }));
+        main.querySelectorAll(".dec").forEach(b => b.addEventListener("click", () => { const it = Cart.items().find(x=>x.id==b.dataset.id); Cart.setQty(Number(b.dataset.id), it.qty-1); mountChrome(); render(); }));
+        main.querySelectorAll(".rm").forEach(b => b.addEventListener("click", () => { Cart.remove(Number(b.dataset.id)); mountChrome(); render(); }));
+      }
+    });
+  </script>
+</body>
+</html>

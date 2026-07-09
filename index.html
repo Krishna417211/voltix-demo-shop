@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voltix</title>
+  <script src="assets/js/app.js" defer></script>
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      location.replace(Auth.isIn() ? "products.html" : "login.html");
+    });
+  </script>
+</head>
+<body></body>
+</html>

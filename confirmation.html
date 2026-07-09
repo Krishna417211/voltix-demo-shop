@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Order confirmed · Voltix</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+  <div class="container">
+    <div id="main"></div>
+  </div>
+  <footer class="site">Voltix · demo store for QA testing — not a real shop.</footer>
+
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!requireAuth()) return;
+      mountChrome();
+      const orderId = new URLSearchParams(location.search).get("order");
+      const orders = readJSON("voltix_orders", []);
+      const order = orders.find(o => o.id === orderId);
+      const main = document.getElementById("main");
+      main.innerHTML = `
+        <div class="empty">
+          <div class="big">✅</div>
+          <h1 data-testid="order-confirmed">Thank you — your order is confirmed!</h1>
+          <p>Order <b>${orderId || "—"}</b>${order ? ` · Total <b>${money(order.total)}</b>` : ""}</p>
+          <p>A confirmation has been sent to <b>${(Auth.user()||{}).email||""}</b> (demo — no real email).</p>
+          <div style="margin-top:20px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap">
+            <a class="btn primary" href="products.html">Continue shopping</a>
+            <a class="btn ghost" href="account.html">View my orders</a>
+          </div>
+        </div>`;
+    });
+  </script>
+</body>
+</html>

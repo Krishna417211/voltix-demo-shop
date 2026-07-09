@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkout · Voltix</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+  <div class="container">
+    <div class="page-head"><div><h1>Checkout</h1></div></div>
+    <div id="main"></div>
+  </div>
+  <footer class="site">Voltix · demo store for QA testing — not a real shop.</footer>
+
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!requireAuth()) return;
+      mountChrome();
+      const items = Cart.items();
+      const main = document.getElementById("main");
+      if (!items.length) {
+        main.innerHTML = `<div class="empty"><div class="big">🛒</div><p>Your cart is empty — nothing to check out.</p><a class="btn primary" href="products.html">Browse products</a></div>`;
+        return;
+      }
+      const u = Auth.user();
+      const shipping = Cart.subtotal() > 150 ? 0 : 9.0;
+      const tax = Cart.subtotal() * 0.08;
+      const total = Cart.subtotal() + shipping + tax;
+
+      main.innerHTML = `
+        <form class="two-col" id="checkoutForm" novalidate>
+          <div class="card" style="padding:22px 24px">
+            <h3 style="margin:0 0 6px">Shipping details</h3>
+            <label for="fullname">Full name</label>
+            <input id="fullname" name="fullname" value="${u ? u.name : ''}" />
+            <label for="address">Address</label>
+            <input id="address" name="address" placeholder="123 Demo Street" />
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
+              <div><label for="city">City</label><input id="city" name="city" /></div>
+              <div><label for="zip">ZIP / Postcode</label><input id="zip" name="zip" /></div>
+            </div>
+            <h3 style="margin:22px 0 6px">Payment</h3>
+            <label for="card">Card number</label>
+            <input id="card" name="card" inputmode="numeric" placeholder="4242 4242 4242 4242" />
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
+              <div><label for="exp">Expiry</label><input id="exp" name="exp" placeholder="MM/YY" /></div>
+              <div><label for="cvc">CVC</label><input id="cvc" name="cvc" placeholder="123" /></div>
+            </div>
+            <div class="error" id="error" role="alert"></div>
+          </div>
+          <div class="summary">
+            <h3 style="margin:0 0 12px">Order summary</h3>
+            ${items.map(i => `<div class="line"><span>${i.art} ${i.name} × ${i.qty}</span><span>${money(i.price*i.qty)}</span></div>`).join("")}
+            <div class="line"><span>Shipping</span><span>${shipping ? money(shipping) : "Free"}</span></div>
+            <div class="line"><span>Tax</span><span>${money(tax)}</span></div>
+            <div class="total"><span>Total</span><span>${money(total)}</span></div>
+            <button class="btn primary block" type="submit" style="margin-top:18px" data-testid="place-order">Place order</button>
+            <a class="btn ghost block" href="cart.html" style="margin-top:10px">Back to cart</a>
+          </div>
+        </form>`;
+
+      document.getElementById("checkoutForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const err = document.getElementById("error");
+        const req = ["fullname","address","city","zip","card","exp","cvc"];
+        const missing = req.filter(id => !document.getElementById(id).value.trim());
+        if (missing.length) { err.textContent = "Please fill in all shipping and payment fields."; return; }
+
+        const orderId = "VX-" + Date.now().toString().slice(-6);
+        const orders = readJSON("voltix_orders", []);
+        orders.unshift({ id: orderId, date: new Date().toISOString(), items, total });
+        writeJSON("voltix_orders", orders);
+        Cart.clear();
+        location.href = "confirmation.html?order=" + orderId;
+      });
+    });
+  </script>
+</body>
+</html>

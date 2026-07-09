@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My account · Voltix</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+  <div class="container">
+    <div class="page-head">
+      <div><h1>My account</h1><p id="whoami"></p></div>
+      <button class="btn ghost" id="logout" data-testid="logout-btn">Sign out</button>
+    </div>
+    <h3>Order history</h3>
+    <div id="orders"></div>
+  </div>
+  <footer class="site">Voltix · demo store for QA testing — not a real shop.</footer>
+
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!requireAuth()) return;
+      mountChrome();
+      const u = Auth.user();
+      document.getElementById("whoami").textContent = `${u.name} · ${u.email}`;
+      document.getElementById("logout").addEventListener("click", () => { Auth.logout(); location.href = "login.html"; });
+
+      const orders = readJSON("voltix_orders", []);
+      const host = document.getElementById("orders");
+      if (!orders.length) {
+        host.innerHTML = `<div class="empty"><div class="big">📦</div><p>No orders yet.</p><a class="btn primary" href="products.html">Start shopping</a></div>`;
+        return;
+      }
+      host.innerHTML = `<div class="card" style="padding:6px 18px"><table>
+        <thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th></tr></thead>
+        <tbody>${orders.map(o => `
+          <tr>
+            <td><b>${o.id}</b></td>
+            <td>${new Date(o.date).toLocaleString()}</td>
+            <td>${o.items.reduce((s,i)=>s+i.qty,0)} item(s)</td>
+            <td>${money(o.total)}</td>
+          </tr>`).join("")}</tbody>
+      </table></div>`;
+    });
+  </script>
+</body>
+</html>

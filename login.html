@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in · Voltix</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <div class="auth-wrap">
+    <form class="auth-card" id="loginForm" novalidate>
+      <div class="brand"><span class="dot"></span> Voltix</div>
+      <p class="auth-sub">Sign in to your store account</p>
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" placeholder="you@example.com" />
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+
+      <div class="error" id="error" role="alert"></div>
+
+      <button class="btn primary block" type="submit" style="margin-top:8px" data-testid="login-btn">Sign in</button>
+
+      <div class="demo-creds">
+        Demo login &nbsp;→&nbsp; <b>shopper@voltix.io</b> &nbsp;/&nbsp; <b>Voltix123</b>
+      </div>
+    </form>
+  </div>
+
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (Auth.isIn()) { location.replace("products.html"); return; }
+      const form = document.getElementById("loginForm");
+      const err = document.getElementById("error");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        err.textContent = "";
+        const email = document.getElementById("email").value;
+        const pw = document.getElementById("password").value;
+        if (!email || !pw) { err.textContent = "Please enter your email and password."; return; }
+        if (Auth.login(email, pw)) location.href = "products.html";
+        else err.textContent = "Invalid credentials. Try the demo login shown below.";
+      });
+    });
+  </script>
+</body>
+</html>
