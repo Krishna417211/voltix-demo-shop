@@ -37,3 +37,4 @@ When prompted: accept the detected settings (framework: **Other**, output: curre
 Vercel prints the public URL — that's what you connect in Meridian.
 
 > Demo only — not a real shop; no payments are processed.
+<!-- pair badge test -->
