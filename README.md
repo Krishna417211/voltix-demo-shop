@@ -38,3 +38,4 @@ Vercel prints the public URL — that's what you connect in Meridian.
 
 > Demo only — not a real shop; no payments are processed.
 <!-- pair badge test -->
+The best demo site that i have seen ever
